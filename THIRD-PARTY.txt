@@ -44,7 +44,7 @@ ThirdParty/stb_vorbis/stb_vorbis.c
   stb_vorbis v1.22 by Sean Barrett, http://nothings.org/stb_vorbis/
   Source: https://raw.githubusercontent.com/nothings/stb/master/stb_vorbis.c (2026-11-11)
   SHA-256 as downloaded: 4c7cb2ff1f7011e9d67950446b7eb9ca044f2e464d76bfbb0b84dd2e23e65636
-  SHA-256 with the fixes: 0ffe2fac93ba3c289f49f7f6b68ad81c2324ec289b8915fbc1d0cec05871d935
+  SHA-256 with the fixes: 7ac2402c7713a8d87c826bae2f99f77c8da1923a7290a62385f3e0e06d7ab0ab
   Used for Ogg Vorbis (Source/Helix/Audio/Decoding/Implementation/VorbisDecoder.cpp), always with an alloc buffer.
   Fixed in our copy:
   - decode_residue: residue type 2 limited its range to n * 2 values instead of n * channels, so files of more than
@@ -55,3 +55,7 @@ ThirdParty/stb_vorbis/stb_vorbis.c
   - vorbis_deinit: after a setup that failed part way, the residue tables held garbage pointers that the cleanup
     walked. With an alloc buffer every free does nothing, so the cleanup now returns at once in that case. Found by
     the Vorbis fuzz target.
+  - make_block_array, decode_residue, inverse_mdct: when the alloc buffer had no room left, temp_alloc gave NULL
+    and the pointer table was written through it (a residue of a damaged setup can ask for any amount of
+    classification memory). A full buffer is now VORBIS_outofmem for that packet. Found by the Corpus / Audio
+    fuzz runs under AddressSanitizer (round 2394233 of helix_audio_fuzz).

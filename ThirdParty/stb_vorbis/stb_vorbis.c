@@ -940,6 +940,7 @@ static void *make_block_array(void *mem, int count, int size)
    int i;
    void ** p = (void **) mem;
    char *q = (char *) (p + count);
+   if (!mem) return NULL; // Helix: the alloc buffer can run out (see THIRD-PARTY.txt)
    for (i=0; i < count; ++i) {
       p[i] = q;
       q += size;
@@ -2126,6 +2127,13 @@ static void decode_residue(vorb *f, float *residue_buffers[], int ch, int n, int
       if (!do_not_decode[i])
          memset(residue_buffers[i], 0, sizeof(float) * n);
 
+   // Helix: a residue of a damaged setup can need more classification memory than the alloc buffer holds.
+   #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
+   if (!part_classdata) { f->error = VORBIS_outofmem; goto done; }
+   #else
+   if (!classifications) { f->error = VORBIS_outofmem; goto done; }
+   #endif
+
    if (rtype == 2 && ch != 1) {
       for (j=0; j < ch; ++j)
          if (!do_not_decode[j])
@@ -2634,6 +2642,7 @@ static void inverse_mdct(float *buffer, int n, vorb *f, int blocktype)
    int save_point = temp_alloc_save(f);
    float *buf2 = (float *) temp_alloc(f, n2 * sizeof(*buf2));
    float *u=NULL,*v=NULL;
+   if (!buf2) { f->error = VORBIS_outofmem; return; } // Helix: the alloc buffer ran out
    // twiddle factors
    float *A = f->A[blocktype];
 
