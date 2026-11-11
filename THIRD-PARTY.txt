@@ -1,0 +1,57 @@
+Third party code in Helix.Audio
+===============================
+
+All four files offer the same public domain dedication (the Unlicense) as one of two licenses; Helix uses it.
+Its text, as the files carry it:
+
+  ALTERNATIVE B - Public Domain (www.unlicense.org)
+  This is free and unencumbered software released into the public domain.
+  Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+  software, either in source code form or as a compiled binary, for any purpose,
+  commercial or non-commercial, and by any means.
+  In jurisdictions that recognize copyright laws, the author or authors of this
+  software dedicate any and all copyright interest in the software to the public
+  domain. We make this dedication for the benefit of the public at large and to
+  the detriment of our heirs and successors. We intend this dedication to be an
+  overt act of relinquishment in perpetuity of all present and future rights to
+  this software under copyright law.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ThirdParty/dr_wav/dr_wav.h
+  dr_wav v0.14.7 (development head) by David Reid, https://github.com/mackron/dr_libs
+  Source: https://raw.githubusercontent.com/mackron/dr_libs/master/dr_wav.h (2026-11-11)
+  SHA-256: 7c9660d75361ad6175e6217c63a1075c9512445c06bc951197fc479179f76b39
+  Used for WAV, RF64 and Wave64 (Source/Helix/Audio/Decoding/Implementation/DrDecoders.cpp). The file is unchanged.
+
+ThirdParty/dr_flac/dr_flac.h
+  dr_flac v0.13.5 (development head) by David Reid, https://github.com/mackron/dr_libs
+  Source: https://raw.githubusercontent.com/mackron/dr_libs/master/dr_flac.h (2026-11-11)
+  SHA-256: 3f010d3142a5b9df80a0bd8b325de54317468b1aff85abb257c86dbfefe9bd2a
+  Used for FLAC (DrDecoders.cpp). The file is unchanged.
+
+ThirdParty/dr_mp3/dr_mp3.h
+  dr_mp3 v0.7.5 (development head) by David Reid, https://github.com/mackron/dr_libs
+  Source: https://raw.githubusercontent.com/mackron/dr_libs/master/dr_mp3.h (2026-11-11)
+  SHA-256: 7a6cc38b0afdb55cfc9eec991d9169d67beb8fd910be2995121510cdaa99c356
+  Used for MP3 (DrDecoders.cpp). The file is unchanged.
+
+ThirdParty/stb_vorbis/stb_vorbis.c
+  stb_vorbis v1.22 by Sean Barrett, http://nothings.org/stb_vorbis/
+  Source: https://raw.githubusercontent.com/nothings/stb/master/stb_vorbis.c (2026-11-11)
+  SHA-256 as downloaded: 4c7cb2ff1f7011e9d67950446b7eb9ca044f2e464d76bfbb0b84dd2e23e65636
+  SHA-256 with the fixes: 0ffe2fac93ba3c289f49f7f6b68ad81c2324ec289b8915fbc1d0cec05871d935
+  Used for Ogg Vorbis (Source/Helix/Audio/Decoding/Implementation/VorbisDecoder.cpp), always with an alloc buffer.
+  Fixed in our copy:
+  - decode_residue: residue type 2 limited its range to n * 2 values instead of n * channels, so files of more than
+    two channels that use it (ffmpeg's libvorbis 5.1) decoded to noise. Found by the 5.1 decode test.
+  - start_decoder: vendor and comment lengths read from the header were not checked, so a length of 0xFFFFFFFF
+    made len + 1 zero and the terminating write landed outside. Lengths above 16 MB and more than 2^20 comments
+    are now an invalid setup. Found by the Vorbis fuzz target.
+  - vorbis_deinit: after a setup that failed part way, the residue tables held garbage pointers that the cleanup
+    walked. With an alloc buffer every free does nothing, so the cleanup now returns at once in that case. Found by
+    the Vorbis fuzz target.
