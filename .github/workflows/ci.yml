@@ -8,3 +8,5 @@ on:
 jobs:
   build:
     uses: kisstp2006/Helix.CMake/.github/workflows/build.yml@main
+    with:
+      sanitize: true
